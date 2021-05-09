@@ -62,4 +62,52 @@ En este ejemplo la petición a *url2* no se haría hasta que se completara la pe
 
 ### mergeMap
 
+#### merge
+Cuando hacemos *merge* de varios observables el resultado es otro observable que va emitiendo cada uno de los valores
+que emitan los observables originales a medida que vayan ocurriendo.
+
+El observable resultante no completará hasta que todos los observables originales hayan completado.
+
+```javascript
+const obs1$ = interval(100).pipe(take(2));
+const obs2$ = interval(100).pipe(take(4));
+
+merge(obs1$, obs2$).subscribe(console.log);
+/* 
+0 // obs1
+0 // obs2
+1 // obs1
+1 // obs2
+2 // obs2
+3 // obs2
+*/
+```
+
+#### mergeMap
+*mergeMap* se basa en la misma lógica que *merge* y por lo tanto, al contrario que *concatMap* todos los observables internos
+son suscritos al inicio y van emitiendo valores en paralelo.
+
+```javascript
+from([1, 2, 3]).pipe(
+  mergeMap((arrayValue) => {
+      const intervalTime = arrayValue * 100;
+      const valuesToTake = arrayValue;
+      return interval(intervalTime).pipe(
+        take(valuesToTake),
+        map((interval) => {
+          console.log(`Array value: ${arrayValue} - Iteration: ${interval + 1} - Time: ${intervalTime * (interval + 1)}ms`)
+        })
+      )
+  })
+).subscribe();
+/* 
+'Array value: 1 - Iteration: 1 - Time: 100ms'
+'Array value: 2 - Iteration: 1 - Time: 200ms'
+'Array value: 3 - Iteration: 1 - Time: 300ms'
+'Array value: 2 - Iteration: 2 - Time: 400ms'
+'Array value: 3 - Iteration: 2 - Time: 600ms'
+'Array value: 3 - Iteration: 3 - Time: 900ms'
+*/
+```
+
 ### switchMap
